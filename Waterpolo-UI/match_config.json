@@ -1,0 +1,69 @@
+{
+  "match_details": {
+    "game": "THA-HKG",
+    "venue": "Ahmedabad, IND",
+    "date": "10.10.2025",
+    "time": "14:00",
+    "category": "Men",
+    "match_number": 21,
+    "day_number": 7
+  },
+  "officials": {
+    "referee": "IVANOVSKI Stanko (MNE) AMBETOV Adil (KAZ)",
+    "var_official": "FUKAYA Shuei (JPN)",
+    "timekeeper": "",
+    "assistant_ref": "",
+    "twpc_delegate": "NANAVATI Kamlesh",
+    "secretary": ""
+  },
+  "white_caps": {
+    "team_name": "Iran",
+    "team_code": "IRI",
+    "head_coach": "PANAM Hasht Mehdi",
+    "assistant_coach": "HAMRAHI Amir",
+    "team_official": "MILANOVIC Dejan",
+    "general_manager": "TAHERIAN Sirons",
+    "team_doctor": "MEHRI Saber",
+    "players": [
+      {"number": 1, "name": "GHALILI Hamed"},
+      {"number": 2, "name": "AGHAEI KARIMI Omid"},
+      {"number": 3, "name": "MEHRKIANESHAHRI Ali"},
+      {"number": 4, "name": "BEHZADSABOURI Farbo"},
+      {"number": 5, "name": "IRANPOURTARI Ashkan"},
+      {"number": 6, "name": "ADHAM Mersad"},
+      {"number": 7, "name": "SHAMS Arman"},
+      {"number": 8, "name": "YAZDANKHAN Mehdi (C)"},
+      {"number": 9, "name": "JALILPOUR Amirreza"},
+      {"number": 10, "name": "GHANDELIJAAGHA Amirali"},
+      {"number": 11, "name": "BARZEGARSHARFABA"},
+      {"number": 12, "name": "SADRNIA Seyedefan"},
+      {"number": 13, "name": "AMIRAN Amirhossein"},
+      {"number": 14, "name": "GOLESTANRAD Mehrab"}
+    ]
+  },
+  "blue_caps": {
+    "team_name": "P.R. China",
+    "team_code": "CHN",
+    "head_coach": "MAO Ling Yun",
+    "assistant_coach": "ZHU Juh Yi",
+    "team_official": "LI Bin",
+    "general_manager": "",
+    "team_doctor": "",
+    "players": [
+      {"number": 1, "name": "CHEN Haotian"},
+      {"number": 2, "name": "LIU Zhifeng"},
+      {"number": 3, "name": "CHO Chengfiao"},
+      {"number": 4, "name": "YU Lijun"},
+      {"number": 5, "name": "ZHANG Jinpeng"},
+      {"number": 6, "name": "WANG Beiyi"},
+      {"number": 7, "name": "ZHU Beile"},
+      {"number": 8, "name": "LU YI"},
+      {"number": 9, "name": "CHEN Yimin (C)"},
+      {"number": 10, "name": "YANG Shangjin"},
+      {"number": 11, "name": "CAI Yuhao"},
+      {"number": 12, "name": "SHEN Dingxong"},
+      {"number": 13, "name": "YAO Zhenghan"},
+      {"number": 14, "name": "ZHU Gangmin"}
+    ]
+  }
+}

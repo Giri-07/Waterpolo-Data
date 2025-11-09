@@ -1,0 +1,122 @@
+{
+  "home_name": "KAR",
+  "guest_name": "MAH",
+  "home_logo": "C:/Users/girid/Downloads/KAR.png",
+  "guest_logo": "C:/Users/girid/Downloads/MAH.png",
+  "players_home": [
+    {
+      "num": 1,
+      "name": "abcd"
+    },
+    {
+      "num": 2,
+      "name": "efd"
+    },
+    {
+      "num": 3,
+      "name": "sd"
+    },
+    {
+      "num": 4,
+      "name": "d"
+    },
+    {
+      "num": 5,
+      "name": "d"
+    },
+    {
+      "num": 6,
+      "name": ""
+    },
+    {
+      "num": 7,
+      "name": "dfsd"
+    },
+    {
+      "num": 8,
+      "name": "dsfds"
+    },
+    {
+      "num": 9,
+      "name": "sdfs"
+    },
+    {
+      "num": 10,
+      "name": "dsfsd"
+    },
+    {
+      "num": 11,
+      "name": "dsfdsf"
+    },
+    {
+      "num": 12,
+      "name": "dsfds"
+    },
+    {
+      "num": 13,
+      "name": "dsfds"
+    },
+    {
+      "num": 14,
+      "name": "dsfds"
+    }
+  ],
+  "players_guest": [
+    {
+      "num": 1,
+      "name": "sd"
+    },
+    {
+      "num": 2,
+      "name": "sadasdsa"
+    },
+    {
+      "num": 3,
+      "name": "ascsacas"
+    },
+    {
+      "num": 4,
+      "name": "assac"
+    },
+    {
+      "num": 5,
+      "name": "ascasc"
+    },
+    {
+      "num": 6,
+      "name": "ascsac"
+    },
+    {
+      "num": 7,
+      "name": "ascsac"
+    },
+    {
+      "num": 8,
+      "name": "ascsac"
+    },
+    {
+      "num": 9,
+      "name": "ascasc"
+    },
+    {
+      "num": 10,
+      "name": "ascas"
+    },
+    {
+      "num": 11,
+      "name": "ascasc"
+    },
+    {
+      "num": 12,
+      "name": "ascsa"
+    },
+    {
+      "num": 13,
+      "name": "ascsac"
+    },
+    {
+      "num": 14,
+      "name": "ascasc"
+    }
+  ]
+}
