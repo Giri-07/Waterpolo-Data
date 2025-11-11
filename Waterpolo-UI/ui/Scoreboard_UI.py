@@ -54,6 +54,83 @@ except Exception:
 
 
 if _PYQT_AVAILABLE:
+    def is_valid_time_string(time_str):
+        """
+        Validate time string format and values.
+        Returns True if valid (MM:SS with reasonable values), False otherwise.
+        """
+        if not time_str or not isinstance(time_str, str):
+            return False
+        parts = time_str.split(":")
+        if len(parts) != 2:
+            return False
+        try:
+            minutes = int(parts[0])
+            seconds = int(parts[1])
+            # Water polo games: 8 minutes per quarter
+            # Allow 0-08 minutes, 0-59 seconds
+            return 0 <= minutes <= 8 and 0 <= seconds <= 59
+        except ValueError:
+            return False
+    
+    def is_valid_action_time(action_str):
+        """
+        Validate action time string (just seconds, not MM:SS format).
+        Returns True if valid (0-30 seconds or 0-60 for timeout), False otherwise.
+        """
+        if not action_str or not isinstance(action_str, str):
+            return False
+        try:
+            # Action time is just a number string like "30", "20", "00"
+            seconds = int(action_str)
+            # Action clock max is 30 seconds, timeout can be up to 60
+            return 0 <= seconds <= 60
+        except ValueError:
+            return False
+    
+    def is_valid_score(score):
+        """
+        Validate score value.
+        Returns True if valid (reasonable range 0-50), False otherwise.
+        """
+        if score is None:
+            return False
+        try:
+            score_int = int(score)
+            # Water polo scores rarely exceed 30-40 per team
+            # Allow 0-50 as safe range
+            return 0 <= score_int <= 50
+        except (ValueError, TypeError):
+            return False
+    
+    def is_valid_period(period):
+        """
+        Validate period value.
+        Returns True if valid (1-4), False otherwise.
+        """
+        if period is None:
+            return False
+        try:
+            period_int = int(period)
+            # Standard: 4 quarters
+            return 1 <= period_int <= 4
+        except (ValueError, TypeError):
+            return False
+    
+    def is_valid_timeout_count(to_count):
+        """
+        Validate timeout count.
+        Returns True if valid (0-2), False otherwise.
+        """
+        if to_count is None:
+            return False
+        try:
+            to_int = int(to_count)
+            # Teams typically get 0-2 timeouts per game
+            return 0 <= to_int <= 2
+        except (ValueError, TypeError):
+            return False
+
     class PlayerRow(QWidget):
         def __init__(self, parent=None, is_white_team=False):
             super().__init__(parent)
@@ -119,11 +196,28 @@ if _PYQT_AVAILABLE:
             if name != self._last_name:
                 self.name_label.setText(name if name else "")
                 self._last_name = name
+            
+            # Validate points (reasonable range 0-20 per player)
             if points != self._last_points:
-                self.points_label.setText(str(points if points is not None else 0))
-                self._last_points = points
+                try:
+                    points_int = int(points) if points is not None else 0
+                    if 0 <= points_int <= 20:
+                        self.points_label.setText(str(points_int))
+                        self._last_points = points
+                    else:
+                        logging.debug(f"Invalid player points: {points}, keeping previous value")
+                except (ValueError, TypeError):
+                    logging.debug(f"Invalid player points type: {points}, keeping previous value")
 
-            fouls = int(fouls or 0)
+            # Validate fouls (reasonable range 0-5 per player)
+            try:
+                fouls = int(fouls or 0)
+                if not (0 <= fouls <= 5):
+                    logging.debug(f"Invalid player fouls: {fouls}, using 0")
+                    fouls = 0
+            except (ValueError, TypeError):
+                logging.debug(f"Invalid player fouls type: {fouls}, using 0")
+                fouls = 0
             if fouls == self._last_fouls:
                 return
             self._last_fouls = fouls
@@ -141,21 +235,21 @@ if _PYQT_AVAILABLE:
                     # No fouls - all bubbles empty
                     dot.setStyleSheet(f"background: transparent; border-radius:10px; border:3px solid {border_color};")
                 elif fouls == 1:
-                    # 1 foul - first bubble blue
+                    # 1 foul - first bubble filled
                     if i == 0:
-                        dot.setStyleSheet("background: blue; border-radius:10px;")
+                        dot.setStyleSheet(f"background: {fill_color}; border-radius:10px;")
                     else:
                         dot.setStyleSheet(f"background: transparent; border-radius:10px; border:3px solid {border_color};")
                 elif fouls == 2:
-                    # 2 fouls - first two bubbles blue
+                    # 2 fouls - first two bubbles filled
                     if i <= 1:
-                        dot.setStyleSheet("background: blue; border-radius:10px;")
+                        dot.setStyleSheet(f"background: {fill_color}; border-radius:10px;")
                     else:
                         dot.setStyleSheet(f"background: transparent; border-radius:10px; border:3px solid {border_color};")
                 else:
-                    # 3+ fouls - first two blue, third red
+                    # 3+ fouls - first two filled with team color, third red
                     if i <= 1:
-                        dot.setStyleSheet("background: blue; border-radius:10px;")
+                        dot.setStyleSheet(f"background: {fill_color}; border-radius:10px;")
                     elif i == 2:
                         dot.setStyleSheet("background: red; border-radius:10px;")
                     else:
@@ -457,16 +551,38 @@ if _PYQT_AVAILABLE:
             penalty_counts_guest = snapshot["penalty_counts_guest"]
             last_time = get_last_valid_packet_time()
 
-            # Update static-ish things
+            # Update static-ish things with validation
             self.home_name.setText(home_name)
             self.guest_name.setText(guest_name)
-            self.home_score_label.setText(str(home_score))
-            self.guest_score_label.setText(str(guest_score))
-            self.period_label.setText(f"PERIOD {period}")
+            
+            # Validate and display scores
+            if is_valid_score(home_score):
+                self.home_score_label.setText(str(home_score))
+            else:
+                logging.debug(f"Invalid home score: {home_score}, keeping previous value")
+            
+            if is_valid_score(guest_score):
+                self.guest_score_label.setText(str(guest_score))
+            else:
+                logging.debug(f"Invalid guest score: {guest_score}, keeping previous value")
+            
+            # Validate and display period
+            if is_valid_period(period):
+                self.period_label.setText(f"PERIOD {period}")
+            else:
+                logging.debug(f"Invalid period: {period}, keeping previous value")
 
-            # Main + action time (no tenths)
-            self.main_time_label.setText(main_time)
-            self.action_time_label.setText(action_time)
+            # Validate and display times
+            if is_valid_time_string(main_time):
+                self.main_time_label.setText(main_time)
+            else:
+                logging.debug(f"Invalid main time: {main_time}, keeping previous value")
+            
+            # Action time is just seconds (0-60), not MM:SS format
+            if is_valid_action_time(action_time):
+                self.action_time_label.setText(action_time)
+            else:
+                logging.debug(f"Invalid action time: {action_time}, keeping previous value")
 
             # Pause UI = show "PAUSED" if gap > timeout
             if last_time == 0:
@@ -484,9 +600,16 @@ if _PYQT_AVAILABLE:
             else:
                 self.poss.setText("")
 
-            # TO labels reflect B9 "used timeouts"
-            self.home_to.setText(f"TO: {to_home}")
-            self.guest_to.setText(f"TO: {to_guest}")
+            # TO labels reflect B9 "used timeouts" - with validation
+            if is_valid_timeout_count(to_home):
+                self.home_to.setText(f"TO: {to_home}")
+            else:
+                logging.debug(f"Invalid home timeout count: {to_home}, keeping previous value")
+            
+            if is_valid_timeout_count(to_guest):
+                self.guest_to.setText(f"TO: {to_guest}")
+            else:
+                logging.debug(f"Invalid guest timeout count: {to_guest}, keeping previous value")
 
             # Penalty labels - stacked vertically (no P1/P2 prefixes, no # before player)
             home_pen_lines = []

@@ -49,9 +49,19 @@ class PlayerPointsDecoder:
                 return False
             pairs.append(v_byte)
         
+        # Validate points (reasonable range 0-20 per player)
+        import logging
+        valid_pairs = []
+        for i, points in enumerate(pairs):
+            if 0 <= points <= 20:
+                valid_pairs.append(points)
+            else:
+                logging.warning(f"[0x19] Invalid points for player {i+1}: {points}, using 0")
+                valid_pairs.append(0)
+        
         with state_lock:
             for i in range(14):
-                scoreboard['players_home'][i]['points'] = pairs[i]
+                scoreboard['players_home'][i]['points'] = valid_pairs[i]
         
         return True
     
@@ -81,8 +91,18 @@ class PlayerPointsDecoder:
                 return False
             pairs.append(v_byte)
         
+        # Validate points (reasonable range 0-20 per player)
+        import logging
+        valid_pairs = []
+        for i, points in enumerate(pairs):
+            if 0 <= points <= 20:
+                valid_pairs.append(points)
+            else:
+                logging.warning(f"[0x1A] Invalid points for player {i+1}: {points}, using 0")
+                valid_pairs.append(0)
+        
         with state_lock:
             for i in range(14):
-                scoreboard['players_guest'][i]['points'] = pairs[i]
+                scoreboard['players_guest'][i]['points'] = valid_pairs[i]
         
         return True

@@ -32,6 +32,8 @@ class TimePacketDecoder:
         self.pps_count = 0
         self.pps_window_start = time.time()
         self.last_b9_logged = (-1, -1)
+        self.last_action_time = None  # Track previous action time
+        self.last_timeout_secs = 0     # Track previous timeout seconds
         
     def decode_time_packet(self, buf: bytearray, idx: int, scoreboard: dict, state_lock) -> tuple:
         """
@@ -61,7 +63,8 @@ class TimePacketDecoder:
                 is_complement_pair(c_act, act)):
             return (False, None, None, None)
         
-        if mm > 59 or ss > 59:
+        # Validate time ranges: 0-8 minutes, 0-59 seconds
+        if mm > 8 or ss > 59:
             return (False, None, None, None)
         
         main_str = f"{mm:02d}:{ss:02d}"
@@ -75,14 +78,41 @@ class TimePacketDecoder:
         
         # ACTION / TIMEOUT DISPLAY RULE
         if 1 <= timeout_secs <= 60:
+            # Timeout is active (B5 > 0), display timeout seconds
             action_display = f"{timeout_secs:02d}"
         else:
+            # No timeout active, display action clock
             if act == 0xAA:
+                # 0xAA is "no data" sentinel, display as 00
                 action_display = "00"
-            elif act <= 60:
-                action_display = str(act)
+            elif 1 <= act <= 30:
+                # Valid action clock range: 1-30 seconds
+                action_display = f"{act:02d}"
+            elif act == 0:
+                # Action clock at 0 - validate this is legitimate
+                # Suspicious if: previous action time was > 0 AND no timeout was active
+                if (self.last_action_time is not None and 
+                    self.last_action_time > 0 and 
+                    self.last_timeout_secs == 0 and 
+                    timeout_secs == 0):
+                    # Action time suddenly went to 0 without timeout - may be bad data
+                    logging.warning(f"[0x16] Suspicious: Action time dropped from {self.last_action_time} to 0 without timeout")
+                    # Still accept it but log the warning
+                else:
+                    logging.debug(f"[0x16] Action time is 0 (timeout ended or game paused)")
+                action_display = "00"
+            elif 31 <= act <= 60:
+                # Extended range for special cases (some systems may use this)
+                logging.debug(f"[0x16] Action time {act} in extended range (31-60)")
+                action_display = f"{act:02d}"
             else:
+                # Invalid action time value
+                logging.warning(f"[0x16] Invalid action time: {act}, rejecting packet")
                 return (False, None, None, None)
+        
+        # Update tracking for next packet
+        self.last_action_time = act if timeout_secs == 0 else None
+        self.last_timeout_secs = timeout_secs
         
         playing = bool(flags & 0b00010000)
         
@@ -97,12 +127,22 @@ class TimePacketDecoder:
                 is_complement_pair(c_guest, guest) and
                 is_complement_pair(c_per, per)):
                 with state_lock:
-                    if home != 0xAA:
+                    # Validate and update scores (reasonable range 0-50)
+                    if home != 0xAA and 0 <= home <= 50:
                         scoreboard["home_score"] = home
-                    if guest != 0xAA:
+                    elif home != 0xAA:
+                        logging.warning(f"[0x16] Invalid home score: {home}, ignoring")
+                    
+                    if guest != 0xAA and 0 <= guest <= 50:
                         scoreboard["guest_score"] = guest
-                    if per != 0xAA:
+                    elif guest != 0xAA:
+                        logging.warning(f"[0x16] Invalid guest score: {guest}, ignoring")
+                    
+                    # Validate and update period (reasonable range 1-4)
+                    if per != 0xAA and 1 <= per <= 4:
                         scoreboard["period"] = per
+                    elif per != 0xAA:
+                        logging.warning(f"[0x16] Invalid period: {per}, ignoring")
         
         # Decode B9 (timeouts used) - optional pair9
         if idx + 19 <= len(buf):
@@ -114,6 +154,15 @@ class TimePacketDecoder:
                 # Lower 4 bits: Guest timeouts used (direct value, not bit count)
                 home_used = (b9 >> 4) & 0x0F
                 guest_used = b9 & 0x0F
+                
+                # Validate timeout counts (reasonable range 0-2)
+                if not (0 <= home_used <= 2):
+                    logging.warning(f"[B9 in 0x16] Invalid home timeout count: {home_used}, ignoring")
+                    home_used = scoreboard.get("timeouts_home", 0)
+                
+                if not (0 <= guest_used <= 2):
+                    logging.warning(f"[B9 in 0x16] Invalid guest timeout count: {guest_used}, ignoring")
+                    guest_used = scoreboard.get("timeouts_guest", 0)
                 
                 with state_lock:
                     changed = (scoreboard["timeouts_home"] != home_used) or \

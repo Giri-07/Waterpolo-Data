@@ -57,17 +57,30 @@ class FoulsDecoder:
         raw_packet = buf[idx:idx+29]
         logging.debug(f"[0x02] Raw packet (hex): {raw_packet.hex()}")
         
+        # Validate all complement pairs first before processing
         pairs = []
+        validation_failures = []
         for i in range(14):
             c_byte = buf[idx + 1 + i * 2]
             v_byte = buf[idx + 2 + i * 2]
             if not is_complement_pair(c_byte, v_byte):
-                logging.warning(
-                    f"[0x02] Invalid complement pair at player {i+1}: "
-                    f"C=0x{c_byte:02x}, V=0x{v_byte:02x}, Expected C=0x{(~v_byte & 0xFF):02x}"
-                )
-                return False
-            pairs.append(v_byte)
+                validation_failures.append((i+1, c_byte, v_byte))
+                # Only log first failure to reduce noise
+                if len(validation_failures) == 1:
+                    logging.debug(
+                        f"[0x02] Invalid complement pair at player {i+1}: "
+                        f"C=0x{c_byte:02x}, V=0x{v_byte:02x}, Expected C=0x{(~v_byte & 0xFF):02x}"
+                    )
+                # Early exit if multiple failures (likely not a real packet)
+                if len(validation_failures) > 3:
+                    logging.debug(f"[0x02] Multiple validation failures ({len(validation_failures)}), likely false positive 0x02")
+                    return False
+            else:
+                pairs.append(v_byte)
+        
+        # If any validation failures occurred, this is not a valid packet
+        if validation_failures:
+            return False
         
         # Extract home and guest fouls from each byte
         home_fouls_list = []
