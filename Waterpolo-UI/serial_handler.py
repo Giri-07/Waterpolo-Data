@@ -85,12 +85,16 @@ def decode_stream_chunks(ser, on_time_update):
             # ---------- FOULS PACKET (0x02) ----------
             idx_02 = buf.find(bytes([FOULS_PACKET]), i)
             if idx_02 >= 0 and idx_02 < len(buf):
+                logging.debug(f"[0x02] Found at buffer position {idx_02}, buffer size={len(buf)}")
                 if _fouls_decoder.decode_fouls(buf, idx_02, scoreboard, state_lock):
+                    logging.info("[0x02] Successfully decoded fouls packet")
+                    update_last_valid_packet_time()
                     # Successfully decoded, remove from buffer
                     del buf[:idx_02 + 29]
                     i = 0
                     continue
                 else:
+                    logging.debug(f"[0x02] Failed to decode - insufficient data or invalid pairs")
                     i = idx_02 + 1
                     # Don't continue here, also check for other packets
 

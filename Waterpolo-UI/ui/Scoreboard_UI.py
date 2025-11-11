@@ -138,20 +138,24 @@ if _PYQT_AVAILABLE:
 
             for i, dot in enumerate(self.foul_dots):
                 if fouls == 0:
+                    # No fouls - all bubbles empty
                     dot.setStyleSheet(f"background: transparent; border-radius:10px; border:3px solid {border_color};")
                 elif fouls == 1:
+                    # 1 foul - first bubble blue
                     if i == 0:
-                        dot.setStyleSheet(f"background: {fill_color}; border-radius:10px;")
+                        dot.setStyleSheet("background: blue; border-radius:10px;")
                     else:
                         dot.setStyleSheet(f"background: transparent; border-radius:10px; border:3px solid {border_color};")
                 elif fouls == 2:
+                    # 2 fouls - first two bubbles blue
                     if i <= 1:
-                        dot.setStyleSheet(f"background: {fill_color}; border-radius:10px;")
+                        dot.setStyleSheet("background: blue; border-radius:10px;")
                     else:
                         dot.setStyleSheet(f"background: transparent; border-radius:10px; border:3px solid {border_color};")
                 else:
+                    # 3+ fouls - first two blue, third red
                     if i <= 1:
-                        dot.setStyleSheet(f"background: {fill_color}; border-radius:10px;")
+                        dot.setStyleSheet("background: blue; border-radius:10px;")
                     elif i == 2:
                         dot.setStyleSheet("background: red; border-radius:10px;")
                     else:
@@ -226,19 +230,35 @@ if _PYQT_AVAILABLE:
             # Top row
             top_row = QHBoxLayout()
 
-            # Home block (with left margin to move content right)
-            home_block = QVBoxLayout()
-            home_block.setContentsMargins(60, 0, 0, 0)  # Add left margin to move right
+            # Home block - horizontal layout: Logo | Name & Score
+            home_block = QHBoxLayout()
+            home_block.setContentsMargins(20, 0, 0, 0)
+            home_block.setSpacing(15)
+            
+            # Logo on left
             self.home_flag = QLabel()
-            self.home_flag.setFixedSize(100, 60)
-            self.home_flag.setStyleSheet("background: #ffffff20; border-radius:8px;")
+            self.home_flag.setFixedSize(80, 60)
+            self.home_flag.setStyleSheet("background: transparent;")
+            self.home_flag.setScaledContents(False)
             if self.home_logo:
-                self.home_flag.setPixmap(self.home_logo.scaled(100, 60, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+                self.home_flag.setPixmap(self.home_logo.scaled(80, 60, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+            
+            # Name and Score stacked vertically
+            home_info = QVBoxLayout()
+            home_info.setSpacing(0)
+            
             self.home_name = QLabel("HOME")
-            self.home_name.setStyleSheet("font-size:16pt; font-weight:bold; color:white;")
+            self.home_name.setStyleSheet("font-size:20pt; font-weight:bold; color:white;")
+            self.home_name.setAlignment(Qt.AlignLeft | Qt.AlignBottom)
+            
             self.home_score_label = QLabel("0")
-            self.home_score_label.setStyleSheet("font-size:56pt; font-weight:bold; color:white;")
-            self.home_score_label.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+            self.home_score_label.setStyleSheet("font-size:72pt; font-weight:bold; color:white;")
+            self.home_score_label.setAlignment(Qt.AlignLeft | Qt.AlignTop)
+            
+            home_info.addWidget(self.home_name)
+            home_info.addWidget(self.home_score_label)
+            
+            # TO and Penalty row
             self.home_to = QLabel("TO: 0")
             self.home_to.setStyleSheet("""
                 font-size: 14pt; color: #FFD700; font-weight: bold;
@@ -255,18 +275,17 @@ if _PYQT_AVAILABLE:
                 border: 3px solid #FF3333;
             """)
             
-            # Create horizontal layout for TO and Penalty
             home_to_penalty_row = QHBoxLayout()
-            home_to_penalty_row.setSpacing(28)
+            home_to_penalty_row.setSpacing(15)
             home_to_penalty_row.addWidget(self.home_to)
-            home_to_penalty_row.addStretch(1)
             home_to_penalty_row.addWidget(self.home_penalty)
-            home_to_penalty_row.addStretch(1)
+            home_to_penalty_row.addStretch()
             
-            home_block.addWidget(self.home_flag, alignment=Qt.AlignLeft)
-            home_block.addWidget(self.home_name, alignment=Qt.AlignLeft)
-            home_block.addWidget(self.home_score_label, alignment=Qt.AlignLeft)
-            home_block.addLayout(home_to_penalty_row)
+            home_info.addLayout(home_to_penalty_row)
+            
+            home_block.addWidget(self.home_flag)
+            home_block.addLayout(home_info)
+            home_block.addStretch()
             top_row.addLayout(home_block, 2)
 
             # Center block
@@ -312,19 +331,29 @@ if _PYQT_AVAILABLE:
             center_block.addWidget(self.poss, alignment=Qt.AlignCenter)
             top_row.addLayout(center_block, 2)
 
-            # Guest block (with right margin to move content left)
-            guest_block = QVBoxLayout()
-            guest_block.setContentsMargins(0, 0, 60, 0)  # Add right margin to move left
-            self.guest_flag = QLabel()
-            self.guest_flag.setFixedSize(100, 60)
-            self.guest_flag.setStyleSheet("background: #ffffff20; border-radius:8px;")
-            if self.guest_logo:
-                self.guest_flag.setPixmap(self.guest_logo.scaled(100, 60, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+            # Guest block - horizontal layout: Name & Score | Logo
+            guest_block = QHBoxLayout()
+            guest_block.setContentsMargins(0, 0, 20, 0)
+            guest_block.setSpacing(15)
+            
+            guest_block.addStretch()
+            
+            # Name and Score stacked vertically
+            guest_info = QVBoxLayout()
+            guest_info.setSpacing(0)
+            
             self.guest_name = QLabel("GUEST")
-            self.guest_name.setStyleSheet("font-size:16pt; font-weight:bold; color:white;")
+            self.guest_name.setStyleSheet("font-size:20pt; font-weight:bold; color:white;")
+            self.guest_name.setAlignment(Qt.AlignRight | Qt.AlignBottom)
+            
             self.guest_score_label = QLabel("0")
-            self.guest_score_label.setStyleSheet("font-size:56pt; font-weight:bold; color:white;")
-            self.guest_score_label.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+            self.guest_score_label.setStyleSheet("font-size:72pt; font-weight:bold; color:white;")
+            self.guest_score_label.setAlignment(Qt.AlignRight | Qt.AlignTop)
+            
+            guest_info.addWidget(self.guest_name)
+            guest_info.addWidget(self.guest_score_label)
+            
+            # TO and Penalty row
             self.guest_to = QLabel("TO: 0")
             self.guest_to.setStyleSheet("""
                 font-size: 14pt; color: #FFD700; font-weight: bold;
@@ -341,18 +370,25 @@ if _PYQT_AVAILABLE:
                 border: 3px solid #FF3333;
             """)
             
-            # Create horizontal layout for TO and Penalty
             guest_to_penalty_row = QHBoxLayout()
-            guest_to_penalty_row.setSpacing(28)
-            guest_to_penalty_row.addStretch(1)
+            guest_to_penalty_row.setSpacing(15)
+            guest_to_penalty_row.addStretch()
             guest_to_penalty_row.addWidget(self.guest_penalty)
-            guest_to_penalty_row.addStretch(1)
             guest_to_penalty_row.addWidget(self.guest_to)
             
-            guest_block.addWidget(self.guest_flag, alignment=Qt.AlignRight)
-            guest_block.addWidget(self.guest_name, alignment=Qt.AlignRight)
-            guest_block.addWidget(self.guest_score_label, alignment=Qt.AlignRight)
-            guest_block.addLayout(guest_to_penalty_row)
+            guest_info.addLayout(guest_to_penalty_row)
+            
+            # Logo on right
+            self.guest_flag = QLabel()
+            self.guest_flag.setFixedSize(80, 60)
+            self.guest_flag.setStyleSheet("background: transparent;")
+            self.guest_flag.setScaledContents(False)
+            if self.guest_logo:
+                self.guest_flag.setPixmap(self.guest_logo.scaled(80, 60, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+            
+            guest_block.addLayout(guest_info)
+            guest_block.addWidget(self.guest_flag)
+            
             top_row.addLayout(guest_block, 2)
 
             layout.addLayout(top_row)
@@ -473,23 +509,19 @@ if _PYQT_AVAILABLE:
             for i in range(14):
                 ph = players_home[i] if i < len(players_home) else {}
                 pg = players_guest[i] if i < len(players_guest) else {}
-                # Override fouls display to represent cumulative penalty count:
-                # 1st penalty = 1 bubble filled, 2nd = 2 bubbles, 3rd = 3 bubbles (last red).
-                ph_num = ph.get("num")
-                pg_num = pg.get("num")
-                ph_fouls_vis = penalty_counts_home.get(ph_num, 0)
-                pg_fouls_vis = penalty_counts_guest.get(pg_num, 0)
+                # Display personal fouls from 0x02 packet
+                # Bubbles: 1-2 fouls = blue bubbles, 3+ fouls = 2 blue + 1 red
                 self.home_rows[i].update(
                     num=ph.get("num", ""),
                     name=ph.get("name", "") or f"Player {i+1}",
                     points=ph.get("points", 0),
-                    fouls=ph_fouls_vis,
+                    fouls=ph.get("fouls", 0),  # Use fouls from 0x02 packet
                 )
                 self.guest_rows[i].update(
                     num=pg.get("num", ""),
                     name=pg.get("name", "") or f"Player {i+1}",
                     points=pg.get("points", 0),
-                    fouls=pg_fouls_vis,
+                    fouls=pg.get("fouls", 0),  # Use fouls from 0x02 packet
                 )
 
 

@@ -51,15 +51,18 @@ class SetupWindow(QWidget):
                 border: 2px solid #003366;
                 border-radius: 5px;
                 background: white;
+                margin-top: 0px;
             }
             QTabBar::tab {
                 background: #E0E0E0;
-                padding: 10px 20px;
+                padding: 12px 50px;
                 margin-right: 2px;
                 border-top-left-radius: 5px;
                 border-top-right-radius: 5px;
                 font-size: 14pt;
                 font-weight: bold;
+                min-width: 150px;
+                height: 30px;
             }
             QTabBar::tab:selected {
                 background: #003366;
@@ -378,7 +381,7 @@ class SetupWindow(QWidget):
         """Save configuration and emit signal to show scoreboard."""
         self.save_configuration()
         self.show_scoreboard_signal.emit()
-        self.hide()
+        # Keep setup window open in background for easy access
 
 
 def load_team_config():

@@ -85,8 +85,10 @@ def main():
         scoreboard_window.load_logos()
         logging.info("Logos reloaded")
         
+        # Show scoreboard in maximized mode (setup window stays open in background)
         scoreboard_window.showMaximized()
-        setup_window.hide()
+        # Don't hide setup window - keep it accessible in background
+        # Users can Alt+Tab to switch between them or use taskbar
         logging.info("✓ Scoreboard window displayed and ready")
     
     # Connect signal
